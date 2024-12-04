@@ -11,7 +11,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $stmt->bind_param("sss", $username, $email, $password);
 
     if ($stmt->execute()) {
-        echo "Registration successful!";
+        header("Location: login.php");
+        exit;
     } else {
         echo "Error: " . $stmt->error;
     }
@@ -28,3 +29,5 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <input type="password" name="password" required>
     <button type="submit">Register</button>
 </form>
+
+<p>Already have an account? <a href="login.php">Login here</a>.</p>
