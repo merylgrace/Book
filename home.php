@@ -26,6 +26,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -60,9 +61,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         .container {
-            width: 80%;
-            margin: auto;
+            width: 60%;
+            margin: 50px auto;
+            background: white;
             padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
         }
 
         form {
@@ -80,7 +84,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             font-weight: bold;
         }
 
-        form textarea, form select, form button {
+        form textarea,
+        form select,
+        form button {
             width: 100%;
             margin-bottom: 15px;
             padding: 10px;
@@ -132,6 +138,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     </style>
 </head>
+
 <body>
     <header>
         <h1>Book Lovers</h1>
@@ -178,13 +185,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <p><?= htmlspecialchars($row['content']) ?></p>
                         <p>Posted on: <?= $row['created_at'] ?></p>
                     </div>
-            <?php
+                <?php
                 endwhile;
             else:
-            ?>
+                ?>
                 <p>No posts yet!</p>
             <?php endif; ?>
         </div>
     </div>
 </body>
+
 </html>
