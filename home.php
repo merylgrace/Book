@@ -2,7 +2,6 @@
 session_start();
 include 'connect.php';
 include 'header.php';
-include 'footer.php';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $user_id = $_SESSION['user_id'];
@@ -34,27 +33,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             background-color: #f8f9fa;
             margin: 0;
             padding: 0;
-        }
-
-        header {
-            background-color: #007BFF;
-            color: white;
-            padding: 10px 20px;
-            text-align: center;
-        }
-
-        header nav {
-            margin-top: 10px;
-        }
-
-        header nav a {
-            color: white;
-            margin: 0 10px;
-            text-decoration: none;
-        }
-
-        header nav a:hover {
-            text-decoration: underline;
         }
 
         .container {
@@ -182,3 +160,5 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </div>
 </body>
 </html>
+
+<?php include 'footer.php'; ?>
