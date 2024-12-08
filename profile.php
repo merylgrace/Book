@@ -28,6 +28,7 @@ $stmt->close();
 
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -39,6 +40,7 @@ $stmt->close();
             margin: 0;
             padding: 0;
         }
+
         .container {
             width: 70%;
             margin: 50px auto;
@@ -47,19 +49,23 @@ $stmt->close();
             border-radius: 10px;
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
         }
+
         .profile-info h3 {
             color: #007BFF;
         }
+
         .profile-info p {
             font-size: 1.1em;
             margin-bottom: 10px;
         }
+
         .profile-image {
             width: 100px;
             height: 100px;
             border-radius: 50%;
             margin-top: 10px;
         }
+
         .profile-actions a {
             display: inline-block;
             margin-top: 20px;
@@ -69,9 +75,11 @@ $stmt->close();
             text-decoration: none;
             border-radius: 5px;
         }
+
         .profile-actions a:hover {
             background-color: #0056b3;
         }
+
         .post {
             background-color: #fff;
             padding: 15px;
@@ -79,11 +87,13 @@ $stmt->close();
             margin-bottom: 10px;
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
         }
+
         .post h4 {
             color: #007BFF;
         }
     </style>
 </head>
+
 <body>
     <div class="container">
         <h2>Profile</h2>
@@ -116,10 +126,11 @@ $stmt->close();
         </div>
 
         <div class="profile-actions">
-            <a href="edit_profile.php">Edit Profile</a>
+            <a href="editprof.php">Edit Profile</a>
         </div>
     </div>
 </body>
+
 </html>
 
 <?php include 'footer.php'; ?>
