@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="styles.css">
     <style>
         header {
-            background-color: #007BFF;
+            background-color: #333;
             color: white;
             padding: 15px 0;
             text-align: center;

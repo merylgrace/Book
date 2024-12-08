@@ -1,14 +1,16 @@
 <?php
 session_start();
 include 'connect.php';
+include 'header.php';
+include 'footer.php';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $user_id = $_SESSION['user_id'];
-    $book_id = $_POST['book_id'];
+    $book_url = $_POST['book_url']; // Get the book URL from the form
     $content = $_POST['content'];
 
-    $stmt = $conn->prepare("INSERT INTO Posts (user_id, book_id, content, created_at) VALUES (?, ?, ?, NOW())");
-    $stmt->bind_param("iis", $user_id, $book_id, $content);
+    $stmt = $conn->prepare("INSERT INTO Posts (user_id, book_url, content, created_at) VALUES (?, ?, ?, NOW())");
+    $stmt->bind_param("iss", $user_id, $book_url, $content); // Bind the book URL
 
     if ($stmt->execute()) {
         echo "<p>Post created successfully!</p>";
@@ -135,39 +137,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </head>
 
 <body>
-    <header>
-        <h1>Book Lovers</h1>
-        <nav>
-            <a href="home.php">Home</a>
-            <a href="profile.php">Profile</a>
-            <a href="logout.php">Logout</a>
-        </nav>
-    </header>
-
     <div class="container">
         <form method="POST" action="">
-            <label for="book_id">Book:</label>
-            <select name="book_id" id="book_id" required>
-                <?php
-                $bookQuery = "SELECT book_id, title FROM Books";
-                $bookResult = $conn->query($bookQuery);
-                while ($book = $bookResult->fetch_assoc()) {
-                    echo "<option value='{$book['book_id']}'>{$book['title']}</option>";
-                }
-                ?>
-            </select>
+            <label for="book_url">Book URL (optional):</label>
+            <input type="url" name="book_url" id="book_url" placeholder="Enter the URL to the book" />
+
             <label for="content">Post Content:</label>
             <textarea name="content" id="content" rows="5" required></textarea>
+
             <button type="submit">Post</button>
         </form>
 
         <div class="posts">
             <h2>Recent Posts</h2>
             <?php
-            $sql = "SELECT Posts.post_id, Users.username, Books.title, Posts.content, Posts.created_at 
+            $sql = "SELECT Posts.post_id, Users.username, Posts.book_url, Posts.content, Posts.created_at 
                     FROM Posts 
                     JOIN Users ON Posts.user_id = Users.user_id 
-                    JOIN Books ON Posts.book_id = Books.book_id 
                     ORDER BY Posts.created_at DESC";
             $result = $conn->query($sql);
 
@@ -175,7 +161,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 while ($row = $result->fetch_assoc()):
             ?>
                     <div class="post">
-                        <h3><?= htmlspecialchars($row['title']) ?></h3>
+                        <h3>
+                            <?php if ($row['book_url']): ?>
+                                <a href="<?= htmlspecialchars($row['book_url']) ?>" class="book-link" target="_blank"><?= htmlspecialchars($row['book_url']) ?></a>
+                            <?php else: ?>
+                                No Book URL Provided
+                            <?php endif; ?>
+                        </h3>
                         <p>By: <?= htmlspecialchars($row['username']) ?></p>
                         <p><?= htmlspecialchars($row['content']) ?></p>
                         <p>Posted on: <?= $row['created_at'] ?></p>
@@ -189,5 +181,4 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </div>
     </div>
 </body>
-
 </html>
