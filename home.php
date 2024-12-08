@@ -1,11 +1,6 @@
 <?php
 session_start();
-if (!isset($_SESSION['user_id'])) {
-    header("Location: login.php");
-    exit;
-}
 include 'connect.php';
-include 'header.php';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $user_id = $_SESSION['user_id'];
@@ -143,7 +138,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <header>
         <h1>Book Lovers</h1>
         <nav>
-            <a href="index.php">Home</a>
+            <a href="home.php">Home</a>
             <a href="profile.php">Profile</a>
             <a href="logout.php">Logout</a>
         </nav>
