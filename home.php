@@ -1,5 +1,10 @@
 <?php
 session_start();
+if (!isset($_SESSION['user_id'])) {
+    // Redirect to login page if no session exists
+    header("Location: login.php");
+    exit();
+}
 include 'connect.php';
 include 'header.php';
 
@@ -8,6 +13,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $book_url = $_POST['book_url']; // Get the book URL from the form
     $content = $_POST['content'];
 
+    // Insert post into Posts table
     $stmt = $conn->prepare("INSERT INTO Posts (user_id, book_url, content, created_at) VALUES (?, ?, ?, NOW())");
     $stmt->bind_param("iss", $user_id, $book_url, $content); // Bind the book URL
 
@@ -70,7 +76,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         form button {
-            background: #007BFF;
+            background: #333;
             color: white;
             font-weight: bold;
             border: none;
@@ -111,6 +117,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             font-size: 0.9em;
             color: #888;
         }
+
+        .follow-btn,
+        .like-btn,
+        .comment-btn {
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            font-size: 14px;
+            cursor: pointer;
+            border-radius: 5px;
+            text-decoration: none;
+        }
+
+        .follow-btn:hover,
+        .like-btn:hover,
+        .comment-btn:hover {
+            background-color: #0056b3;
+        }
     </style>
 </head>
 
@@ -129,6 +154,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <div class="posts">
             <h2>Recent Posts</h2>
             <?php
+            // Query to get posts and user information
             $sql = "SELECT Posts.post_id, Users.username, Posts.book_url, Posts.content, Posts.created_at 
                     FROM Posts 
                     JOIN Users ON Posts.user_id = Users.user_id 
@@ -159,6 +185,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </div>
     </div>
 </body>
+
 </html>
 
 <?php include 'footer.php'; ?>
