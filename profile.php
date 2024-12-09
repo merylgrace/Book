@@ -14,11 +14,7 @@ $user = $result->fetch_assoc();
 $stmt->close();
 
 // Get the user's posts
-$sql = "SELECT Posts.post_id, Books.title, Posts.content, Posts.created_at 
-        FROM Posts 
-        JOIN Books ON Posts.book_url = Books.book_url 
-        WHERE Posts.user_id = ? 
-        ORDER BY Posts.created_at DESC";
+$sql = "SELECT post_id, book_url, content, created_at FROM Posts WHERE user_id = ? ORDER BY created_at DESC";
 $stmt = $conn->prepare($sql);
 $stmt->bind_param("i", $user_id);
 $stmt->execute();
@@ -115,7 +111,12 @@ $stmt->close();
             <?php if ($posts_result->num_rows > 0): ?>
                 <?php while ($post = $posts_result->fetch_assoc()): ?>
                     <div class="post">
-                        <h4><?= htmlspecialchars($post['title']) ?></h4>
+                        <!-- Display book URL (if exists) -->
+                        <?php if ($post['book_url']): ?>
+                            <h4><a href="<?= htmlspecialchars($post['book_url']) ?>" target="_blank">Book URL</a></h4>
+                        <?php else: ?>
+                            <h4>No Book URL Provided</h4>
+                        <?php endif; ?>
                         <p><?= htmlspecialchars($post['content']) ?></p>
                         <p>Posted on: <?= $post['created_at'] ?></p>
                     </div>
