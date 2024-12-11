@@ -207,12 +207,23 @@ function isLiked($post_id, $user_id) {
                 <h3><?= htmlspecialchars($user['username']) ?></h3>
             </div>
 
-            <!-- Follow Button -->
-            <div>
-                <?php if ($_SESSION['user_id'] != $user['user_id']): ?>
-                    <a href="follow.php?user_id=<?= $user['user_id'] ?>" class="follow-link">Follow</a>
-                <?php endif; ?>
-            </div>
+            <?php
+            $current_user_id = $_SESSION['user_id']; // Get the logged-in user's ID
+
+            // Check if the current user is already following the target user
+            $checkFollowQuery = "SELECT * FROM Follows WHERE follower_id = ? AND followed_id = ?";
+            $stmt = $conn->prepare($checkFollowQuery);
+            $stmt->bind_param("ii", $current_user_id, $profile_user_id); // Corrected to use the correct profile_user_id
+            $stmt->execute();
+            $followResult = $stmt->get_result();
+
+            // Display Follow/Following button
+            if ($followResult->num_rows > 0): // User is already following
+            ?>
+                <span class="follow-link">Following</span>
+            <?php else: // User is not following ?>
+                <a href="follow.php?followed_user_id=<?= $profile_user_id ?>" class="follow-link">Follow</a>
+            <?php endif; ?>
         </div>
 
         <!-- Profile Information -->

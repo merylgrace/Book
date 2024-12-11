@@ -17,6 +17,25 @@ $result = $conn->query($sql);
 
 // Get the logged-in user ID
 $current_user_id = $_SESSION['user_id'];
+
+// Handle form submission for new post
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['content'])) {
+    // Get form data
+    $content = $_POST['content'];
+    $book_url = $_POST['book_url'] ?? ''; // Default to empty string if no book URL provided
+
+    // Insert post into the database
+    $sql = "INSERT INTO Posts (user_id, content, book_url, created_at) VALUES (?, ?, ?, NOW())";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("iss", $current_user_id, $content, $book_url);
+    if ($stmt->execute()) {
+        // Redirect back to the home page to refresh the posts
+        header("Location: home.php");
+        exit();
+    } else {
+        echo "Error posting content.";
+    }
+}
 ?>
 
 <!DOCTYPE html>
