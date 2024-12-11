@@ -47,7 +47,7 @@ function isLiked($post_id, $user_id) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Profile - Book Lovers Social Media</title>
+    <title>Book Lovers Social Media</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -68,8 +68,8 @@ function isLiked($post_id, $user_id) {
         /* Profile Header with Flexbox */
         .profile-header {
             display: flex;
-            align-items: center; /* Align items vertically in the center */
-            justify-content: space-between; /* Space between the profile image, username, and follow button */
+            align-items: center;
+            justify-content: space-between;
         }
 
         /* Profile image style */
@@ -77,15 +77,15 @@ function isLiked($post_id, $user_id) {
             width: 150px;
             height: 150px;
             border-radius: 50%;
-            margin-right: 20px; /* Space between image and username */
+            margin-right: 20px;
         }
 
         /* Username style */
         .profile-header .username {
             color: #007BFF;
             font-size: 1.5em;
-            text-align: left; /* Left-align the username */
-            flex-grow: 1; /* Allow the username div to grow and take available space */
+            text-align: left;
+            flex-grow: 1;
         }
 
         /* Follow button style */
@@ -144,7 +144,7 @@ function isLiked($post_id, $user_id) {
         }
 
         .liked {
-            background-color: #28a745; /* Green for liked button */
+            background-color: #28a745;
         }
 
         /* Edit Profile Button */
@@ -161,7 +161,34 @@ function isLiked($post_id, $user_id) {
         .profile-actions a:hover {
             background-color: #0056b3;
         }
+
+        /* Comment Form */
+        .comment-form {
+            display: none;
+            margin-top: 10px;
+        }
+
+        .comment-form textarea {
+            width: 100%;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+
+        .comment-form button {
+            background-color: #007BFF;
+            color: white;
+            padding: 8px 15px;
+            border-radius: 5px;
+            border: none;
+        }
     </style>
+    <script>
+        function toggleCommentForm(postId) {
+            const commentForm = document.getElementById('comment-form-' + postId);
+            commentForm.style.display = (commentForm.style.display === 'none' || commentForm.style.display === '') ? 'block' : 'none';
+        }
+    </script>
 </head>
 
 <body>
@@ -220,7 +247,43 @@ function isLiked($post_id, $user_id) {
                             <?php else: ?>
                                 <button onclick="window.location.href='like.php?post_id=<?= $post['post_id'] ?>'">Like</button>
                             <?php endif; ?>
-                            <button onclick="window.location.href='comment.php?post_id=<?= $post['post_id'] ?>'">Comment</button>
+                            <!-- Comment Button -->
+                            <button type="button" onclick="toggleCommentForm(<?= $post['post_id'] ?>)">Comment</button>
+
+                            <!-- Comment Form -->
+                            <div id="comment-form-<?= $post['post_id'] ?>" class="comment-form" style="display:none;">
+                                <form action="post_comment.php" method="POST">
+                                    <textarea name="comment_content" placeholder="Write your comment here..." required></textarea><br>
+                                    <input type="hidden" name="post_id" value="<?= $post['post_id'] ?>">
+                                    <button type="submit">Post Comment</button>
+                                </form>
+                            </div>
+                        </div>
+
+                        <!-- Display Comments -->
+                        <div class="comments">
+                            <?php
+                            // Get comments for this post
+                            $comment_sql = "SELECT Comments.content, Users.username, Comments.created_at 
+                                            FROM Comments 
+                                            JOIN Users ON Comments.user_id = Users.user_id 
+                                            WHERE Comments.post_id = ? 
+                                            ORDER BY Comments.created_at ASC";
+                            $comment_stmt = $conn->prepare($comment_sql);
+                            $comment_stmt->bind_param("i", $post['post_id']);
+                            $comment_stmt->execute();
+                            $comment_result = $comment_stmt->get_result();
+
+                            if ($comment_result->num_rows > 0):
+                                while ($comment = $comment_result->fetch_assoc()): ?>
+                                    <div class="comment">
+                                        <p><strong><?= htmlspecialchars($comment['username']) ?>:</strong> <?= htmlspecialchars($comment['content']) ?></p>
+                                        <small>Posted on: <?= $comment['created_at'] ?></small>
+                                    </div>
+                                <?php endwhile; 
+                            else: ?>
+                                <p>No comments yet.</p>
+                            <?php endif; ?>
                         </div>
                     </div>
                 <?php endwhile; ?>
