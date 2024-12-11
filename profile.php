@@ -3,11 +3,17 @@ session_start();
 include 'connect.php';
 include 'header.php';
 
-// Get user details
-$user_id = $_SESSION['user_id'];
+// Check if 'user_id' is passed in the URL, if not use the logged-in user's ID
+if (isset($_GET['user_id'])) {
+    $profile_user_id = $_GET['user_id'];
+} else {
+    $profile_user_id = $_SESSION['user_id']; // Default to logged-in user's profile
+}
+
+// Get user details for the profile
 $sql = "SELECT * FROM Users WHERE user_id = ?";
 $stmt = $conn->prepare($sql);
-$stmt->bind_param("i", $user_id);
+$stmt->bind_param("i", $profile_user_id);
 $stmt->execute();
 $result = $stmt->get_result();
 $user = $result->fetch_assoc();
@@ -16,7 +22,7 @@ $stmt->close();
 // Get the user's posts
 $sql = "SELECT post_id, book_url, content, created_at FROM Posts WHERE user_id = ? ORDER BY created_at DESC";
 $stmt = $conn->prepare($sql);
-$stmt->bind_param("i", $user_id);
+$stmt->bind_param("i", $profile_user_id);
 $stmt->execute();
 $posts_result = $stmt->get_result();
 $stmt->close();
@@ -159,7 +165,9 @@ $stmt->close();
 
             <!-- Follow Button -->
             <div>
-                <a href="follow.php?user_id=<?= $user['user_id'] ?>" class="follow-link">Follow</a>
+                <?php if ($_SESSION['user_id'] != $user['user_id']): ?>
+                    <a href="follow.php?user_id=<?= $user['user_id'] ?>" class="follow-link">Follow</a>
+                <?php endif; ?>
             </div>
         </div>
 
@@ -172,7 +180,7 @@ $stmt->close();
 
         <!-- User Posts -->
         <div class="posts">
-            <h3>Your Posts</h3>
+            <h3>Posts</h3>
             <?php if ($posts_result->num_rows > 0): ?>
                 <?php while ($post = $posts_result->fetch_assoc()): ?>
                     <div class="post">
@@ -195,14 +203,16 @@ $stmt->close();
                     </div>
                 <?php endwhile; ?>
             <?php else: ?>
-                <p>You haven't posted anything yet!</p>
+                <p>This user hasn't posted anything yet.</p>
             <?php endif; ?>
         </div>
 
         <!-- Edit Profile Button -->
-        <div class="profile-actions">
-            <a href="editprof.php">Edit Profile</a>
-        </div>
+        <?php if ($_SESSION['user_id'] == $user['user_id']): ?>
+            <div class="profile-actions">
+                <a href="editprof.php">Edit Profile</a>
+            </div>
+        <?php endif; ?>
     </div>
 </body>
 
