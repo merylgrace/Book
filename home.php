@@ -8,6 +8,21 @@ if (!isset($_SESSION['user_id'])) {
 include 'connect.php';
 include 'header.php';
 
+// Handle post submission
+if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['content'])) {
+    // Get the post content and book URL
+    $content = $_POST['content'];
+    $book_url = $_POST['book_url'];
+
+    // Insert the new post into the database
+    $user_id = $_SESSION['user_id'];
+    $sql = "INSERT INTO Posts (user_id, content, book_url, created_at) VALUES (?, ?, ?, NOW())";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("iss", $user_id, $content, $book_url);
+    $stmt->execute();
+    $stmt->close();
+}
+
 // Get posts and related user details
 $sql = "SELECT Posts.post_id, Users.user_id AS poster_id, Users.username, Posts.content, Posts.created_at 
         FROM Posts 
@@ -109,13 +124,51 @@ $result = $conn->query($sql);
             font-size: 1.2em;
             color: #888;
         }
+
+        .post-form textarea {
+            width: 100%;
+            height: 100px;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            margin-bottom: 10px;
+        }
+
+        .post-form input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            margin-bottom: 10px;
+        }
+
+        .post-form button {
+            background-color: #007BFF;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 5px;
+            border: none;
+            cursor: pointer;
+        }
+
+        .post-form button:hover {
+            background-color: #0056b3;
+        }
     </style>
 </head>
 
 <body>
     <div class="container">
+        <!-- Post Submission Form -->
+        <div class="post-form">
+            <h2>Create a New Post</h2>
+            <form action="home.php" method="POST">
+                <textarea name="content" placeholder="What's on your mind?" required></textarea><br>
+                <input type="text" name="book_url" placeholder="Enter a Book URL (optional)"><br>
+                <button type="submit">Post</button>
+            </form>
+        </div>
         <h2>Recent Posts</h2>
-
         <?php if ($result->num_rows > 0): ?>
             <?php while ($row = $result->fetch_assoc()): ?>
                 <div class="post">
