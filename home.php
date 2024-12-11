@@ -1,29 +1,19 @@
 <?php
 session_start();
 if (!isset($_SESSION['user_id'])) {
-    // Redirect to login page if no session exists
     header("Location: login.php");
     exit();
 }
+
 include 'connect.php';
 include 'header.php';
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $user_id = $_SESSION['user_id'];
-    $book_url = $_POST['book_url']; // Get the book URL from the form
-    $content = $_POST['content'];
-
-    // Insert post into Posts table
-    $stmt = $conn->prepare("INSERT INTO Posts (user_id, book_url, content, created_at) VALUES (?, ?, ?, NOW())");
-    $stmt->bind_param("iss", $user_id, $book_url, $content); // Bind the book URL
-
-    if ($stmt->execute()) {
-        echo "<p>Post created successfully!</p>";
-    } else {
-        echo "<p>Error: " . $stmt->error . "</p>";
-    }
-    $stmt->close();
-}
+// Get posts and related user details
+$sql = "SELECT Posts.post_id, Users.user_id AS poster_id, Users.username, Posts.content, Posts.created_at 
+        FROM Posts 
+        JOIN Users ON Posts.user_id = Users.user_id 
+        ORDER BY Posts.created_at DESC";
+$result = $conn->query($sql);
 ?>
 
 <!DOCTYPE html>
@@ -32,7 +22,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Book Lovers Social Media</title>
+    <title>Home - Book Lovers Social Media</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -42,7 +32,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         .container {
-            width: 60%;
+            width: 70%;
             margin: 50px auto;
             background: white;
             padding: 20px;
@@ -50,139 +40,119 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
         }
 
-        form {
-            background: white;
-            border: 1px solid #ddd;
-            padding: 20px;
-            margin-bottom: 20px;
-            border-radius: 5px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
-
-        form label {
-            display: block;
-            margin-bottom: 10px;
-            font-weight: bold;
-        }
-
-        form textarea,
-        form select,
-        form button {
-            width: 100%;
-            margin-bottom: 15px;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-        }
-
-        form button {
-            background: #333;
-            color: white;
-            font-weight: bold;
-            border: none;
-            cursor: pointer;
-        }
-
-        form button:hover {
-            background: #0056b3;
-        }
-
-        .posts {
-            background: white;
-            padding: 20px;
-            border-radius: 5px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
-
         .post {
-            border-bottom: 1px solid #ddd;
-            margin-bottom: 15px;
-            padding-bottom: 15px;
+            background-color: #fff;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
         }
 
-        .post:last-child {
-            border-bottom: none;
+        .post-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
         }
 
-        .post h3 {
+        .post-header .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .post-header .username {
             color: #007BFF;
+            text-decoration: none;
+            font-weight: bold;
         }
 
-        .post p {
-            margin: 5px 0;
-            color: #555;
+        .post-header .username:hover {
+            text-decoration: underline;
         }
 
-        .post p:last-child {
+        .post-header .follow-link {
+            color: #007BFF;
+            text-decoration: none;
             font-size: 0.9em;
-            color: #888;
         }
 
-        .follow-btn,
-        .like-btn,
-        .comment-btn {
+        .post-header .follow-link:hover {
+            text-decoration: underline;
+        }
+
+        .post-content {
+            margin-bottom: 10px;
+        }
+
+        .post-actions {
+            display: flex;
+            justify-content: flex-start;
+            gap: 10px;
+        }
+
+        .post-actions button {
             background-color: #007BFF;
             color: white;
             border: none;
-            padding: 8px 16px;
-            font-size: 14px;
-            cursor: pointer;
+            padding: 8px 15px;
             border-radius: 5px;
-            text-decoration: none;
+            cursor: pointer;
         }
 
-        .follow-btn:hover,
-        .like-btn:hover,
-        .comment-btn:hover {
+        .post-actions button:hover {
             background-color: #0056b3;
+        }
+
+        .no-posts {
+            text-align: center;
+            font-size: 1.2em;
+            color: #888;
         }
     </style>
 </head>
 
 <body>
     <div class="container">
-        <form method="POST" action="">
-            <label for="book_url">Book URL (optional):</label>
-            <input type="url" name="book_url" id="book_url" placeholder="Enter the URL to the book" />
+        <h2>Recent Posts</h2>
 
-            <label for="content">Post Content:</label>
-            <textarea name="content" id="content" rows="5" required></textarea>
-
-            <button type="submit">Post</button>
-        </form>
-
-        <div class="posts">
-            <h2>Recent Posts</h2>
-            <?php
-            // Query to get posts and user information
-            $sql = "SELECT Posts.post_id, Users.username, Posts.book_url, Posts.content, Posts.created_at 
-                    FROM Posts 
-                    JOIN Users ON Posts.user_id = Users.user_id 
-                    ORDER BY Posts.created_at DESC";
-            $result = $conn->query($sql);
-
-            if ($result->num_rows > 0):
-                while ($row = $result->fetch_assoc()):
-            ?>
-                    <div class="post">
-                        <h3>
-                            <?php if ($row['book_url']): ?>
-                                <a href="<?= htmlspecialchars($row['book_url']) ?>" class="book-link" target="_blank"><?= htmlspecialchars($row['book_url']) ?></a>
-                            <?php else: ?>
-                                No Book URL Provided
+        <?php if ($result->num_rows > 0): ?>
+            <?php while ($row = $result->fetch_assoc()): ?>
+                <div class="post">
+                    <!-- Post Header -->
+                    <div class="post-header">
+                        <div class="user-info">
+                            <a href="profile.php?user_id=<?= $row['poster_id'] ?>" class="username">
+                                <?= htmlspecialchars($row['username']) ?>
+                            </a>
+                            <?php if ($_SESSION['user_id'] !== $row['poster_id']): ?>
+                                <a href="follow.php?followed_user_id=<?= $row['poster_id'] ?>" class="follow-link">Follow</a>
                             <?php endif; ?>
-                        </h3>
-                        <p>By: <?= htmlspecialchars($row['username']) ?></p>
-                        <p><?= htmlspecialchars($row['content']) ?></p>
-                        <p>Posted on: <?= $row['created_at'] ?></p>
+                        </div>
                     </div>
-                <?php
-                endwhile;
-            else:
-                ?>
-                <p>No posts yet!</p>
-            <?php endif; ?>
-        </div>
+
+                    <!-- Post Content -->
+                    <div class="post-content">
+                        <p><?= htmlspecialchars($row['content']) ?></p>
+                        <small>Posted on: <?= $row['created_at'] ?></small>
+                    </div>
+
+                    <!-- Post Actions -->
+                    <div class="post-actions">
+                        <form action="like.php" method="POST" style="display: inline;">
+                            <input type="hidden" name="post_id" value="<?= $row['post_id'] ?>">
+                            <button type="submit">Like</button>
+                        </form>
+                        <form action="comment.php" method="POST" style="display: inline;">
+                            <input type="hidden" name="post_id" value="<?= $row['post_id'] ?>">
+                            <button type="submit">Comment</button>
+                        </form>
+                    </div>
+                </div>
+            <?php endwhile; ?>
+        <?php else: ?>
+            <p class="no-posts">No posts available. Be the first to post something!</p>
+        <?php endif; ?>
     </div>
 </body>
 
