@@ -8,27 +8,15 @@ if (!isset($_SESSION['user_id'])) {
 include 'connect.php';
 include 'header.php';
 
-// Handle post submission
-if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['content'])) {
-    // Get the post content and book URL
-    $content = $_POST['content'];
-    $book_url = $_POST['book_url'];
-
-    // Insert the new post into the database
-    $user_id = $_SESSION['user_id'];
-    $sql = "INSERT INTO Posts (user_id, content, book_url, created_at) VALUES (?, ?, ?, NOW())";
-    $stmt = $conn->prepare($sql);
-    $stmt->bind_param("iss", $user_id, $content, $book_url);
-    $stmt->execute();
-    $stmt->close();
-}
-
 // Get posts and related user details
 $sql = "SELECT Posts.post_id, Users.user_id AS poster_id, Users.username, Posts.content, Posts.created_at 
         FROM Posts 
         JOIN Users ON Posts.user_id = Users.user_id 
         ORDER BY Posts.created_at DESC";
 $result = $conn->query($sql);
+
+// Get the logged-in user ID
+$current_user_id = $_SESSION['user_id'];
 ?>
 
 <!DOCTYPE html>
@@ -159,7 +147,6 @@ $result = $conn->query($sql);
 
 <body>
     <div class="container">
-        <!-- Post Submission Form -->
         <div class="post-form">
             <h2>Create a New Post</h2>
             <form action="home.php" method="POST">
@@ -178,7 +165,19 @@ $result = $conn->query($sql);
                             <a href="profile.php?user_id=<?= $row['poster_id'] ?>" class="username">
                                 <?= htmlspecialchars($row['username']) ?>
                             </a>
-                            <?php if ($_SESSION['user_id'] !== $row['poster_id']): ?>
+
+                            <?php
+                            // Check if the current user is already following the target user
+                            $checkFollowQuery = "SELECT * FROM Follows WHERE follower_id = ? AND followed_id = ?";
+                            $stmt = $conn->prepare($checkFollowQuery);
+                            $stmt->bind_param("ii", $current_user_id, $row['poster_id']);
+                            $stmt->execute();
+                            $followResult = $stmt->get_result();
+
+                            // Display Follow/Following button
+                            if ($followResult->num_rows > 0): ?>
+                                <span class="follow-link">Following</span>
+                            <?php else: ?>
                                 <a href="follow.php?followed_user_id=<?= $row['poster_id'] ?>" class="follow-link">Follow</a>
                             <?php endif; ?>
                         </div>
