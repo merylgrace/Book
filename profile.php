@@ -26,6 +26,19 @@ $stmt->bind_param("i", $profile_user_id);
 $stmt->execute();
 $posts_result = $stmt->get_result();
 $stmt->close();
+
+// Function to check if a user has liked a post
+function isLiked($post_id, $user_id) {
+    global $conn;
+    $sql = "SELECT * FROM Likes WHERE user_id = ? AND post_id = ?";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("ii", $user_id, $post_id);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $stmt->close();
+    return $result->num_rows > 0; // Returns true if liked, false if not
+}
+
 ?>
 
 <!DOCTYPE html>
@@ -130,6 +143,10 @@ $stmt->close();
             background-color: #0056b3;
         }
 
+        .liked {
+            background-color: #28a745; /* Green for liked button */
+        }
+
         /* Edit Profile Button */
         .profile-actions a {
             display: inline-block;
@@ -197,7 +214,12 @@ $stmt->close();
 
                         <!-- Post Actions -->
                         <div class="post-actions">
-                            <button onclick="window.location.href='like.php?post_id=<?= $post['post_id'] ?>'">Like</button>
+                            <!-- Like button -->
+                            <?php if (isLiked($post['post_id'], $_SESSION['user_id'])): ?>
+                                <button class="liked" disabled>Liked</button>
+                            <?php else: ?>
+                                <button onclick="window.location.href='like.php?post_id=<?= $post['post_id'] ?>'">Like</button>
+                            <?php endif; ?>
                             <button onclick="window.location.href='comment.php?post_id=<?= $post['post_id'] ?>'">Comment</button>
                         </div>
                     </div>

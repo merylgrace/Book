@@ -142,6 +142,10 @@ $current_user_id = $_SESSION['user_id'];
         .post-form button:hover {
             background-color: #0056b3;
         }
+
+        .liked-button {
+            background-color: #28a745;
+        }
     </style>
 </head>
 
@@ -191,10 +195,27 @@ $current_user_id = $_SESSION['user_id'];
 
                     <!-- Post Actions -->
                     <div class="post-actions">
-                        <form action="like.php" method="POST" style="display: inline;">
-                            <input type="hidden" name="post_id" value="<?= $row['post_id'] ?>">
-                            <button type="submit">Like</button>
-                        </form>
+                        <?php
+                        // Check if the current user has already liked this post
+                        $like_check_sql = "SELECT 1 FROM Likes WHERE post_id = ? AND user_id = ?";
+                        $stmt = $conn->prepare($like_check_sql);
+                        $stmt->bind_param("ii", $row['post_id'], $current_user_id);
+                        $stmt->execute();
+                        $stmt->store_result();
+                        $is_liked = $stmt->num_rows > 0;
+                        $stmt->close();
+                        ?>
+
+                        <!-- Display Like Button or Liked -->
+                        <?php if ($is_liked): ?>
+                            <button class="liked-button" disabled>Liked</button>
+                        <?php else: ?>
+                            <form action="like.php" method="POST" style="display: inline;">
+                                <input type="hidden" name="post_id" value="<?= $row['post_id'] ?>">
+                                <button type="submit">Like</button>
+                            </form>
+                        <?php endif; ?>
+
                         <form action="comment.php" method="POST" style="display: inline;">
                             <input type="hidden" name="post_id" value="<?= $row['post_id'] ?>">
                             <button type="submit">Comment</button>
